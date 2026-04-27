@@ -21,6 +21,13 @@ func (p *Parser) BuildInventory(ctx context.Context) (*inventory.Inventory, erro
 		vcenterID = ""
 	}
 
+	// Get vCenter API version
+	vcenterVersion, err := p.VCenterApiVersion(ctx)
+	if err != nil {
+		zap.S().Named("duckdb_parser").Warnf("Failed to get vCenter API version: %v", err)
+		vcenterVersion = ""
+	}
+
 	// Build vcenter-level inventory (no cluster filter)
 	vcenterData, err := p.buildInventoryData(ctx, Filters{})
 	if err != nil {
@@ -64,9 +71,10 @@ func (p *Parser) BuildInventory(ctx context.Context) (*inventory.Inventory, erro
 	}
 
 	return &inventory.Inventory{
-		VCenterID: vcenterID,
-		VCenter:   vcenterData,
-		Clusters:  clusterInventories,
+		VCenterID:      vcenterID,
+		VCenter:        vcenterData,
+		Clusters:       clusterInventories,
+		VCenterVersion: vcenterVersion,
 	}, nil
 }
 
